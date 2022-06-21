@@ -1,13 +1,13 @@
 version: '3'
 services:
-  mysqldb:
-    image: mysql:5.7
-    container_name: mysqldb
+  mongodb:
+    image: mongo:latest
+    container_name: mongotest
     ports:
-      - "3306:3306"
+      - "27017:27017"
     environment:
-      MYSQL_ROOT_PASSWORD: admin
-      MYSQL_DATABASE: catalog
+      MONGO_INITDB_ROOT_USERNAME: xx
+      MONGO_INITDB_ROOT_PASSWORD: xx
 
   zipkin-server:
     image: openzipkin/zipkin:2.21
@@ -61,7 +61,6 @@ services:
     entrypoint: /bin/sh
     command: >
       -c "
-      while ! (nc -z config-server 8888 && nc -z vault 8200); do sleep 5; echo 'Waiting for vault and config-server services to start-up...'; done;
       java -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=8787,suspend=n -jar -Dspring.profiles.active=docker /app.jar
       "
   inventory-service:
@@ -75,7 +74,6 @@ services:
     entrypoint: /bin/sh
     command: >
       -c "
-      while ! (nc -z config-server 8888 && nc -z vault 8200); do sleep 5; echo 'Waiting for vault and config-server services to start-up...'; done;
       java -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=8787,suspend=n -jar -Dspring.profiles.active=docker /app.jar
       "
   order-service:
@@ -90,7 +88,6 @@ services:
     entrypoint: /bin/sh
     command: >
       -c "
-      while ! (nc -z config-server 8888 && nc -z vault 8200); do sleep 5; echo 'Waiting for vault and config-server services to start-up...'; done;
       java -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=8787,suspend=n -jar -Dspring.profiles.active=docker /app.jar
       "
   shoppingcart-ui:
@@ -105,7 +102,6 @@ services:
     entrypoint: /bin/sh
     command: >
       -c "
-      while ! (nc -z config-server 8888 && nc -z vault 8200); do sleep 5; echo 'Waiting for vault and config-server services to start-up...'; done;
       java -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=8787,suspend=n -jar -Dspring.profiles.active=docker /app.jar
       "
 
