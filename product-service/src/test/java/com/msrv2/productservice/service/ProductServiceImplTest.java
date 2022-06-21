@@ -11,12 +11,18 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.times;
@@ -78,5 +84,53 @@ class ProductServiceImplTest {
         Mockito.verify(productService, times(1)).getProductByUniqId(Mockito.eq(uniqId));
 
         assertEquals(productExpected, productActual);
+    }
+
+
+    @Test
+    void getProductsBySku() {
+        final Map<String, Boolean> input = Stream.of(
+                                                         new AbstractMap.SimpleEntry<>("123", true),
+                                                         new AbstractMap.SimpleEntry<>("124", false),
+                                                         new AbstractMap.SimpleEntry<>("125", true))
+                                                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey,
+                                                                           AbstractMap.SimpleEntry::getValue));
+        List<ProductAvailability> productsAvailability = new ArrayList<>();
+        List<Product> products = new ArrayList<>();
+        input.forEach((uniqId, isAvailable) -> {
+            productsAvailability.add(ProductAvailability.builder()
+                                                        .uniqId(uniqId)
+                                                        .available(isAvailable)
+                                                        .build());
+            products.add(Product.builder()
+                                .uniqId(uniqId)
+                                //.available(isAvailable)
+                                .build());
+        });
+
+        TestUtils.mockInventoryAndCatalogServicesProductsReturn(productsAvailability, products, inventoryServiceClient,
+                                                                catalogServiceClient);
+
+        List<Product> productsExpected = products
+                .stream()
+                .filter(product -> productsAvailability
+                        .stream()
+                        .filter(productAvailability -> productAvailability.getUniqId()
+                                                                          .equals(product.getUniqId()))
+                        .findFirst()
+                        .get()
+                        .isAvailable())
+                .peek(product -> product.setAvailable(true))
+                .collect(Collectors.toList());
+
+        String sku = "555";
+        List<Product> productsActual = productService.getProductsBySku(sku);
+
+        Mockito.verify(inventoryServiceClient, times(1)).getProductsAvailabilityBySku(Mockito.eq(sku));
+        Mockito.verify(catalogServiceClient, times(1)).getProductsBySku(Mockito.eq(sku));
+        Mockito.verify(productService, times(1)).getProductsBySku(Mockito.eq(sku));
+
+        assertEquals(productsExpected, productsActual);
+
     }
 }

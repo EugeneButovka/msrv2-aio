@@ -10,6 +10,7 @@ import org.mockito.Mockito;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 
 public class TestUtils {
@@ -34,4 +35,17 @@ public class TestUtils {
                .getProductByUniqId(Mockito.eq(product.getUniqId()));
     }
 
+    public static void mockInventoryAndCatalogServicesProductsReturn(List<ProductAvailability> productsAvailability,
+                                                                     List<Product> products,
+                                                                     InventoryServiceClient inventoryServiceClient,
+                                                                     CatalogServiceClient catalogServiceClient
+    ) {
+        Mockito.doReturn(productsAvailability)
+               .when(inventoryServiceClient)
+               .getProductsAvailabilityBySku(Mockito.anyString());
+
+        Mockito.doReturn(products)
+               .when(catalogServiceClient)
+               .getProductsBySku(Mockito.anyString());
+    }
 }

@@ -13,6 +13,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -27,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+//@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("testintegration")
@@ -79,7 +80,7 @@ class ProductServiceImplIntegrationTest {
 
         Mockito.verify(inventoryServiceClient, times(1)).getProductAvailabilityByUniqId(Mockito.eq(uniqId));
         Mockito.verify(catalogServiceClient, times(1)).getProductByUniqId(Mockito.eq(uniqId));
-        //Mockito.verify(productService, times(1)).getProductByUniqId(Mockito.eq(uniqId));
+        //Mockito.verify(productServiceSpy, times(1)).getProductByUniqId(Mockito.eq(uniqId));
 
         assertEquals(productExpected, productActual);
     }
