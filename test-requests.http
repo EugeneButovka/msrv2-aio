@@ -1,0 +1,47 @@
+### get by id from product app
+GET http://localhost:8383/api/products/b6c0b6bea69c722939585baeac73c13dgg
+
+### get by sku from product app
+GET http://localhost:8383/api/products/sku/pp5006380337
+
+### get by id from product app acting as proxy to catalog app
+GET http://localhost:8383/api/products/pp5006380337
+
+### get by sku from product app acting as proxy to catalog app
+GET http://localhost:8383/api/products/sku/pp5006380337
+
+### get by sku from product app acting as proxy to catalog app
+GET http://localhost:8282/api/catalog/sku/pp5006380337
+
+### monitor hystrix dashboard
+#http://localhost:8788/hystrix/monitor?stream=http%3A%2F%2Flocalhost%3A8383%2Factuator%2Fhystrix.stream&title=product-app
+
+
+### catalog app config refresh
+POST http://localhost:8181/actuator/refresh
+
+### get by sku directly from catalog app
+GET http://localhost:8181/api/products/sku/pp5006380337
+
+### get by id directly from catalog app
+GET http://localhost:8181/api/products/b6c0b6bea69c722939585baeac73c13d
+
+
+### get by sku directly from inventory app
+GET http://localhost:8282/api/products/sku/pp5006380337
+
+### get by id directly from inventory app
+GET http://localhost:8282/api/products/b6c0b6bea69c722939585baeac73c13d
+
+### get by id directly from inventory app
+GET http://localhost:8282/api/products
+Accept: application/json
+Content-Type: application/json
+
+[
+  "b6c0b6bea69c722939585baeac73c13d",
+  "b6c0b6bea69c722939585baeac73c13ddd",
+  "b6c0b6bea69c722939585baeac73c13dddd"
+]
+
+########
