@@ -34,7 +34,7 @@ public class ProductServiceImpl implements ProductService {
     @SneakyThrows
     @HystrixCommand(
             /*fallbackMethod = "getDefaultProduct",*/
-            ignoreExceptions = {InternalException.class, NoSuchElementException.class, ProductNotFoundException.class},
+            ignoreExceptions = {NoSuchElementException.class, ProductNotFoundException.class},
             commandProperties = {
                     @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "1000"),
                     @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold", value = "2"),
@@ -47,8 +47,18 @@ public class ProductServiceImpl implements ProductService {
         ProductAvailability productAvailability = null;
         Product product = null;
 
-        try {
-            CompletableFuture<ProductAvailability> productAvailabilityCf =
+        //try {
+            log.info("getting inventoryResponse");
+            productAvailability = inventoryServiceClient
+                    .getProductAvailabilityByUniqId(uniqId)
+                    .orElseThrow(() -> new ProductNotFoundException(uniqId));
+
+            log.info("getting catalogResponse");
+            product = catalogServiceClient
+                    .getProductByUniqId(uniqId)
+                    .orElseThrow(() -> new ProductNotFoundException(uniqId));
+
+            /*CompletableFuture<ProductAvailability> productAvailabilityCf =
                     CompletableFuture.supplyAsync(() -> {
                         log.info("getting catalogResponse");
                         return inventoryServiceClient
@@ -69,7 +79,7 @@ public class ProductServiceImpl implements ProductService {
             product = productCf.join();
         } catch (CompletionException e) {
             throw e.getCause();
-        }
+        }*/
 
         boolean isAvailable = Objects.requireNonNull(productAvailability).isAvailable();
         //if (!isAvailable) throw new ProductNotAvailableException(uniqId); //TODO: clarify task
@@ -85,8 +95,14 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> getProductsBySku(String sku) {
         List<ProductAvailability> productsAvailability;
         List<Product> products;
-        try {
-            CompletableFuture<List<ProductAvailability>> productsAvailabilityCf =
+        //try {
+            log.info("getting inventoryResponse");
+            productsAvailability = inventoryServiceClient.getProductsAvailabilityBySku(sku);
+
+            log.info("getting catalogResponse");
+            products = catalogServiceClient.getProductsBySku(sku);
+
+            /*CompletableFuture<List<ProductAvailability>> productsAvailabilityCf =
                     CompletableFuture.supplyAsync(() -> {
                         log.info("getting catalogResponse");
                         return inventoryServiceClient.getProductsAvailabilityBySku(sku);
@@ -102,8 +118,7 @@ public class ProductServiceImpl implements ProductService {
         } catch (CompletionException e) {
             log.error("Error in getProductsBySku: " + e);
             throw e.getCause();
-        }
-
+        }*/
 
         return products.stream()
                        .map(catalogProduct -> {
