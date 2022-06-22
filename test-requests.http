@@ -1,5 +1,5 @@
 ### get by id from product app
-GET http://localhost:8383/api/products/b6c0b6bea69c722939585baeac73c13dgg
+GET http://localhost:8383/api/products/b6c0b6bea69c722939585baeac73c13d
 
 ### get by sku from product app
 GET http://localhost:8383/api/products/sku/pp5006380337

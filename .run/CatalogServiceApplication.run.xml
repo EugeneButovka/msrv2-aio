@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="CatalogServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+  <configuration default="false" name="CatalogServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" singleton="false">
     <module name="catalog-service" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.msrv2.catalogservice.CatalogServiceApplication" />
     <option name="ALTERNATIVE_JRE_PATH" />

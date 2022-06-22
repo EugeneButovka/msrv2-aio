@@ -1,6 +1,7 @@
 package com.msrv2.productservice.controller;
 
 import com.msrv2.productservice.exception.ProductNotAvailableException;
+import com.msrv2.productservice.exception.ProductNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -32,7 +33,7 @@ public class GlobalExceptionHandler {
     }
 
 
-    @ExceptionHandler(value = {NoSuchElementException.class})
+    @ExceptionHandler(value = {NoSuchElementException.class, ProductNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     protected RuntimeException handleNoSuchElement(RuntimeException ex) {
         String message = "NO such element: " + ex.getMessage();

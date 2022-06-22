@@ -1,6 +1,7 @@
 package com.msrv2.productservice.service;
 
 import com.msrv2.productservice.exception.InternalException;
+import com.msrv2.productservice.exception.ProductNotFoundException;
 import com.msrv2.productservice.model.Product;
 import com.msrv2.productservice.model.ProductAvailability;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
@@ -33,7 +34,7 @@ public class ProductServiceImpl implements ProductService {
     @SneakyThrows
     @HystrixCommand(
             /*fallbackMethod = "getDefaultProduct",*/
-            ignoreExceptions = {InternalException.class, NoSuchElementException.class},
+            ignoreExceptions = {InternalException.class, NoSuchElementException.class, ProductNotFoundException.class},
             commandProperties = {
                     @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "1000"),
                     @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold", value = "2"),
@@ -50,36 +51,36 @@ public class ProductServiceImpl implements ProductService {
             CompletableFuture<ProductAvailability> productAvailabilityCf =
                     CompletableFuture.supplyAsync(() -> {
                         log.info("getting catalogResponse");
-                        return inventoryServiceClient.getProductAvailabilityByUniqId(uniqId)
-                                                     .orElseThrow(NoSuchElementException::new);
+                        return inventoryServiceClient
+                                .getProductAvailabilityByUniqId(uniqId)
+                                .orElseThrow(
+                                        () -> new ProductNotFoundException(uniqId));
                     });
             CompletableFuture<Product> productCf =
                     CompletableFuture.supplyAsync(() -> {
                         log.info("getting inventoryResponse");
-                        return catalogServiceClient.getProductByUniqId(uniqId)
-                                                   .orElseThrow(NoSuchElementException::new);
+                        return catalogServiceClient
+                                .getProductByUniqId(uniqId)
+                                .orElseThrow(
+                                        () -> new ProductNotFoundException(uniqId));
                     });
 
             productAvailability = productAvailabilityCf.join();
             product = productCf.join();
         } catch (CompletionException e) {
             throw e.getCause();
-        } catch (HttpStatusCodeException e) {
-            log.error("Error in HTTP request: getProductByUniqId: " + e);
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND) throw e;
-        } catch (RuntimeException e) {
-            log.error("Runtime error in getProductByUniqId: " + e);
-            throw new InternalException("Error in HTTP request: getProductByUniqId");
         }
+
         boolean isAvailable = Objects.requireNonNull(productAvailability).isAvailable();
         //if (!isAvailable) throw new ProductNotAvailableException(uniqId); //TODO: clarify task
         log.info("returning product");
         return Objects.requireNonNull(product).toBuilder().available(isAvailable).build();
     }
 
+    @SneakyThrows
     @HystrixCommand(
             //fallbackMethod = "getDefaultProducts",
-            ignoreExceptions = {InternalException.class}
+            //ignoreExceptions = {InternalException.class}
     )
     public List<Product> getProductsBySku(String sku) {
         List<ProductAvailability> productsAvailability;
@@ -99,9 +100,10 @@ public class ProductServiceImpl implements ProductService {
             productsAvailability = productsAvailabilityCf.join();
             products = productsCf.join();
         } catch (CompletionException e) {
-            log.error("Error in HTTP request: getProductsBySku: " + e);
-            throw new InternalException("Error in HTTP request: getProductsBySku, " + e.getMessage());
+            log.error("Error in getProductsBySku: " + e);
+            throw e.getCause();
         }
+
 
         return products.stream()
                        .map(catalogProduct -> {
