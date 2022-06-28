@@ -23,7 +23,7 @@ function stop() {
 
 function start_infra() {
     echo "Starting mysqldb rabbitmq setup-vault config-server service-registry hystrix-dashboard...."
-    docker-compose -f ${dc_main} up --build --force-recreate -d mysqldb rabbitmq setup-vault config-server service-registry hystrix-dashboard
+    docker-compose -f ${dc_main} up --build --force-recreate -d config-server service-registry hystrix-dashboard
     docker-compose -f ${dc_main} logs -f
 }
 
