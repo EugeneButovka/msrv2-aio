@@ -1,5 +1,7 @@
 package com.msrv2.productservice.service;
 
+import brave.Span;
+import brave.Tracer;
 import com.msrv2.productservice.exception.InternalException;
 import com.msrv2.productservice.exception.ProductNotFoundException;
 import com.msrv2.productservice.model.Product;
@@ -30,6 +32,9 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     protected CatalogServiceClient catalogServiceClient;
 
+    @Autowired
+    protected Tracer tracer;
+
 
     @SneakyThrows
     @HystrixCommand(
@@ -47,8 +52,10 @@ public class ProductServiceImpl implements ProductService {
         ProductAvailability productAvailability = null;
         Product product = null;
 
-        //try {
-            log.info("getting inventoryResponse");
+        Span span = tracer.currentSpan();
+
+        try {
+            /*log.info("getting inventoryResponse");
             productAvailability = inventoryServiceClient
                     .getProductAvailabilityByUniqId(uniqId)
                     .orElseThrow(() -> new ProductNotFoundException(uniqId));
@@ -56,30 +63,34 @@ public class ProductServiceImpl implements ProductService {
             log.info("getting catalogResponse");
             product = catalogServiceClient
                     .getProductByUniqId(uniqId)
-                    .orElseThrow(() -> new ProductNotFoundException(uniqId));
+                    .orElseThrow(() -> new ProductNotFoundException(uniqId));*/
 
-            /*CompletableFuture<ProductAvailability> productAvailabilityCf =
+            CompletableFuture<ProductAvailability> productAvailabilityCf =
                     CompletableFuture.supplyAsync(() -> {
-                        log.info("getting catalogResponse");
-                        return inventoryServiceClient
-                                .getProductAvailabilityByUniqId(uniqId)
-                                .orElseThrow(
-                                        () -> new ProductNotFoundException(uniqId));
+                        try (Tracer.SpanInScope ws = tracer.withSpanInScope(span)) {
+                            log.info("getting catalogResponse");
+                            return inventoryServiceClient
+                                    .getProductAvailabilityByUniqId(uniqId)
+                                    .orElseThrow(
+                                            () -> new ProductNotFoundException(uniqId));
+                        }
                     });
             CompletableFuture<Product> productCf =
                     CompletableFuture.supplyAsync(() -> {
-                        log.info("getting inventoryResponse");
-                        return catalogServiceClient
-                                .getProductByUniqId(uniqId)
-                                .orElseThrow(
-                                        () -> new ProductNotFoundException(uniqId));
+                        try (Tracer.SpanInScope ws = tracer.withSpanInScope(span)) {
+                            log.info("getting inventoryResponse");
+                            return catalogServiceClient
+                                    .getProductByUniqId(uniqId)
+                                    .orElseThrow(
+                                            () -> new ProductNotFoundException(uniqId));
+                        }
                     });
 
             productAvailability = productAvailabilityCf.join();
             product = productCf.join();
         } catch (CompletionException e) {
             throw e.getCause();
-        }*/
+        }
 
         boolean isAvailable = Objects.requireNonNull(productAvailability).isAvailable();
         //if (!isAvailable) throw new ProductNotAvailableException(uniqId); //TODO: clarify task
@@ -96,11 +107,11 @@ public class ProductServiceImpl implements ProductService {
         List<ProductAvailability> productsAvailability;
         List<Product> products;
         //try {
-            log.info("getting inventoryResponse");
-            productsAvailability = inventoryServiceClient.getProductsAvailabilityBySku(sku);
+        log.info("getting inventoryResponse");
+        productsAvailability = inventoryServiceClient.getProductsAvailabilityBySku(sku);
 
-            log.info("getting catalogResponse");
-            products = catalogServiceClient.getProductsBySku(sku);
+        log.info("getting catalogResponse");
+        products = catalogServiceClient.getProductsBySku(sku);
 
             /*CompletableFuture<List<ProductAvailability>> productsAvailabilityCf =
                     CompletableFuture.supplyAsync(() -> {

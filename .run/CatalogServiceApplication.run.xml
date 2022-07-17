@@ -8,4 +8,13 @@
       <option name="Make" enabled="true" />
     </method>
   </configuration>
+  <configuration default="false" name="CatalogServiceApplication-2" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" singleton="false">
+    <module name="catalog-service" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.msrv2.catalogservice.CatalogServiceApplication" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+    <option name="SHORTEN_COMMAND_LINE" value="NONE" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
 </component>
